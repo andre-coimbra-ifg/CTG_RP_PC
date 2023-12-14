@@ -5,12 +5,14 @@ import matplotlib.pyplot as plt
 from pyts.image import RecurrencePlot
 import imageio
 
+TIFF_DEFLATE = 32946
+
 
 def create_rp(segment,
               dimension=2, time_delay=1, percentage=1, use_clip=False, knn=None, imsize=None,
               images_dir='', base_name='Sample',
               suffix='tif',  # suffix='jpg', # suffix='png'
-              compress="tiff_deflate",  # compress=8,
+              compress=TIFF_DEFLATE,
               show_image=False, cmap=None,  # cmap='gray', cmap='binary'
               ):
     """Generate recurrence plot for specified signal segment and save to disk"""
