@@ -10,7 +10,7 @@ def create_rp(segment,
               dimension=2, time_delay=1, percentage=1, use_clip=False, knn=None, imsize=None,
               images_dir='', base_name='Sample',
               suffix='tif',  # suffix='jpg', # suffix='png'
-              compression=9,
+              compress=8,
               show_image=False, cmap=None,  # cmap='gray', cmap='binary'
               ):
     """Generate recurrence plot for specified signal segment and save to disk"""
@@ -40,7 +40,7 @@ def create_rp(segment,
         X_rp = resize_rp(X_rp, new_shape=imsize, use_max=True)
 
     imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
-        X_rp), format=suffix, compress=compression)
+        X_rp), format=suffix, compression=compress)
     if show_image:
         plt.figure(figsize=(3, 3))
         plt.imshow(X_rp, cmap=cmap, origin='lower')
