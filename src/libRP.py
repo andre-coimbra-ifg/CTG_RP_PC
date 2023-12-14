@@ -6,19 +6,19 @@ from pyts.image import RecurrencePlot
 import imageio
 
 
-
 def create_rp(segment,
               dimension=2, time_delay=1, percentage=1, use_clip=False, knn=None, imsize=None,
               images_dir='', base_name='Sample',
-              suffix='jpg', # suffix='png'
-              show_image=False, cmap=None, ##cmap='gray', cmap='binary'
-             ):
+              suffix='tif',  # suffix='jpg', # suffix='png'
+              compression=9,
+              show_image=False, cmap=None,  # cmap='gray', cmap='binary'
+              ):
     """Generate recurrence plot for specified signal segment and save to disk"""
 
     if base_name is None:
-        base_name  = 'sample'
+        base_name = 'sample'
     fname = '{}_d{}_t{}_p{}{}.{}'.format(base_name, dimension, time_delay, percentage,
-                                       '_clipped' if use_clip else '', suffix)
+                                         '_clipped' if use_clip else '', suffix)
 
     segment = np.expand_dims(segment, 0)
     if knn is not None:
@@ -28,17 +28,19 @@ def create_rp(segment,
     elif use_clip:
         rp = RecurrencePlot(dimension=dimension, time_delay=time_delay)
         X_dist = rp.fit_transform(segment)
-        X_rp = rp_norm(X_dist, threshold='percentage_clipped', percentage=percentage)[0]
+        X_rp = rp_norm(X_dist, threshold='percentage_clipped',
+                       percentage=percentage)[0]
     else:
         rp = RecurrencePlot(dimension=dimension, time_delay=time_delay,
-                            #threshold='percentage_points', percentage=percentage)
+                            # threshold='percentage_points', percentage=percentage)
                             threshold='point', percentage=percentage)
         X_rp = rp.fit_transform(segment)[0]
 
     if imsize is not None:
         X_rp = resize_rp(X_rp, new_shape=imsize, use_max=True)
 
-    imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(X_rp))
+    imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
+        X_rp), format=suffix, compress=compression)
     if show_image:
         plt.figure(figsize=(3, 3))
         plt.imshow(X_rp, cmap=cmap, origin='lower')
@@ -55,7 +57,7 @@ def np_to_uint8(X):
 
 def rp_norm(X_dist, threshold=None, percentage=10):
     """Rescale Recurrence Plot after setting nearest-neighbor threshold"""
-    n_samples  = X_dist.shape[0]    # typically value is 1
+    n_samples = X_dist.shape[0]    # typically value is 1
     image_size = X_dist.shape[-1]
 
     assert threshold is not None
@@ -121,7 +123,7 @@ def align_rp(m, n_align=64):
     if rows == new_rows and cols == new_cols:
         padded_m = m
     else:
-        padded_m = np.zeros((new_rows,new_cols), dtype=bool)
+        padded_m = np.zeros((new_rows, new_cols), dtype=bool)
 
         if rows == new_rows:
             padded_m[:, pad_cols_l:-pad_cols_r] = a
@@ -130,7 +132,8 @@ def align_rp(m, n_align=64):
         else:
             print('')
             print(padded_m.shape)
-            print(padded_m[pad_rows_l:-pad_rows_r, pad_cols_l:-pad_cols_r].shape)
+            print(padded_m[pad_rows_l:-pad_rows_r,
+                  pad_cols_l:-pad_cols_r].shape)
             padded_m[pad_rows_l:-pad_rows_r, pad_cols_l:-pad_cols_r] = m
     return padded_m
 
@@ -144,10 +147,12 @@ def resize_rp(mat, new_shape=64, use_mean=False):
         result = np.zeros((new_shape, new_shape))
         for i, ii in enumerate(range(0, rows, downscale_row)):
             for j, jj in enumerate(range(0, cols, downscale_col)):
-                result[i, j] = np.mean(mat[ii:ii + downscale_row, jj:jj + downscale_col])
+                result[i, j] = np.mean(
+                    mat[ii:ii + downscale_row, jj:jj + downscale_col])
     else:
         result = np.zeros((new_shape, new_shape), dtype=bool)
         for i, ii in enumerate(range(0, rows, downscale_row)):
             for j, jj in enumerate(range(0, cols, downscale_col)):
-                result[i, j] = np.max(mat[ii:ii + downscale_row, jj:jj + downscale_col])
+                result[i, j] = np.max(
+                    mat[ii:ii + downscale_row, jj:jj + downscale_col])
     return result
