@@ -10,6 +10,8 @@ GITHUB_DEFAULT_SRC_FILES = [
     'ctg_utils.py',
     'libRP.py',
     'generate_recurrence_images.py',
+    'generate_poincare_images.py',
+    'libPC.py',
     'test.py',  # used for test purposes only, TODO:  Delete after development complete
 ]
 
