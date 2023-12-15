@@ -11,17 +11,17 @@ import matplotlib.pyplot as plt
 import wfdb
 from ctg_utils import get_all_recno, parse_meta_comments
 from basic_denoise import get_valid_segments
-from libRP import create_rp
+from libPC import create_pc
 
 
 # POLICY='early_valid' # 'best_quality', 'early_valid', 'late_valid'
 
 
-def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=True,
+def generate_pc_images(recordings_dir, n_dec=4, clip_stage_II=True,
                        max_seg_min=10, policy='early_valid',
-                       rp_params=[{}],
+                       pc_params=[{}],
                        images_dir='',
-                       images_index_file='rp_images_index.json',
+                       images_index_file='pc_images_index.json',
                        show_signal=False, show_image=False, verbose=False, cmap=None,
                        limit=-1):
 
@@ -112,8 +112,8 @@ def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=True,
             selected_hr = scipy.signal.decimate(selected_hr, n_dec)
 
         image_names = []
-        for p in rp_params:
-            fname = create_rp(selected_hr, base_name=recno, show_image=show_image,
+        for p in pc_params:
+            fname = create_pc(selected_hr, base_name=recno, show_image=show_image,
                               images_dir=images_dir, cmap=cmap, **p)
             image_names.append(fname)
 
@@ -126,15 +126,15 @@ def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=True,
         json.dump(results, outfile)
 
 
-# Configure Recurrent Plot Parameters
-def gen_recurrence_params(dimensions=[2], time_delays=[1], percentages=[1, 3, 10], use_clip_vals=[False]):
-    rp_params = []
+# Configure Poincaré Plot Parameters
+def gen_poincare_params(dimensions=[2], time_delays=[1], percentages=[1, 3, 10], use_clip_vals=[False]):
+    pc_params = []
 
     for dimension in dimensions:
         for time_delay in time_delays:
             for percentage in percentages:
                 for use_clip in use_clip_vals:
-                    rp_params.append({'dimension': dimension, 'time_delay': time_delay,
+                    pc_params.append({'dimension': dimension, 'time_delay': time_delay,
                                       'percentage': percentage, 'use_clip': use_clip})
 
-    return rp_params
+    return pc_params
