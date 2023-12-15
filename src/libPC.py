@@ -13,7 +13,8 @@ nni = pyhrv.utils.load_sample_nni()
 
 # Compute Poincaré using NNI series
 # results = nl.poincare(nni)
-results = nl.poincare(nni, ellipse=False, vectors=False, legend=False)
+results = nl.poincare(nni, ellipse=False, vectors=False,
+                      legend=False, figsize=(599, 599), marker='s')
 
 
 # Print SD1
