@@ -119,8 +119,8 @@ def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=True,
 
         results[recno] = {'names': image_names, 'outcome': meta['Outcome']}
 
-    if verbose:
-        pprint(results)
+#     if verbose:
+#         pprint(results)
 
     with open(os.path.join(images_dir, images_index_file), 'w') as outfile:
         json.dump(results, outfile)
