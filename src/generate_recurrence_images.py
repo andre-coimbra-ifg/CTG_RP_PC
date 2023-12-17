@@ -17,7 +17,7 @@ from libRP import create_rp
 # POLICY='early_valid' # 'best_quality', 'early_valid', 'late_valid'
 
 
-def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=False,
+def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=True,
                        max_seg_min=10, policy='early_valid',
                        rp_params=[{}],
                        images_dir='',
@@ -119,8 +119,8 @@ def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=False,
 
         results[recno] = {'names': image_names, 'outcome': meta['Outcome']}
 
-#     if verbose:
-#         pprint(results)
+    if verbose:
+        pprint(results)
 
     with open(os.path.join(images_dir, images_index_file), 'w') as outfile:
         json.dump(results, outfile)
