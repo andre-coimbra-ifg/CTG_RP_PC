@@ -17,7 +17,7 @@ from libRP import create_rp
 # POLICY='early_valid' # 'best_quality', 'early_valid', 'late_valid'
 
 
-def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=True,
+def generate_rp_images(recordings_dir, n_dec=4, clip_stage_II=False,
                        max_seg_min=10, policy='early_valid',
                        rp_params=[{}],
                        images_dir='',
