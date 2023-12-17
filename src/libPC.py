@@ -8,15 +8,15 @@ import pyhrv.nonlinear as nl
 import imageio
 
 
-# Load sample data
-nni = pyhrv.utils.load_sample_nni()
+# # Load sample data
+# nni = pyhrv.utils.load_sample_nni()
 
-# Compute Poincaré using NNI series
-# results = nl.poincare(nni)
-results = nl.poincare(nni, ellipse=False, vectors=False, legend=False)
+# # Compute Poincaré using NNI series
+# # results = nl.poincare(nni)
+# results = nl.poincare(nni, ellipse=False, vectors=False, legend=False)
 
-# Print SD1
-print(results['sd1'])
+# # Print SD1
+# print(results['sd1'])
 
 TIFF_DEFLATE = 32946
 

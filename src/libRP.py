@@ -39,7 +39,8 @@ def create_rp(segment,
         X_rp = rp.fit_transform(segment)[0]
 
     if imsize is not None:
-        X_rp = resize_rp(X_rp, new_shape=imsize, use_max=True)
+        # X_rp = resize_rp(X_rp, new_shape=imsize, use_max=True)
+        X_rp = resize_rp(X_rp, new_shape=imsize)
 
     imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
         X_rp), format=suffix, compression=compress)
