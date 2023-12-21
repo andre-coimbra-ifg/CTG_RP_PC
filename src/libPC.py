@@ -63,8 +63,8 @@ def create_pc(segment,
         base_name, '_clipped' if use_clip else '', suffix)
 
     print(segment)
-    segment = np.expand_dims(segment, 0)
-    print(segment)
+    # segment = np.expand_dims(segment, 0)
+
     if knn is not None:
         # pc = RecurrencePlot(dimension=dimension, time_delay=time_delay)
         # X_dist = pc.fit_transform(segment)[0]
