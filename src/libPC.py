@@ -62,7 +62,7 @@ def create_pc(segment,
     fname = '{}_pc{}.{}'.format(
         base_name, '_clipped' if use_clip else '', suffix)
 
-    print(segment)
+    # print(segment)
     # segment = np.expand_dims(segment, 0)
 
     if knn is not None:
@@ -86,10 +86,11 @@ def create_pc(segment,
 
     # imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
     #     pc), format=suffix, compression=compress)
-    pc.savefig(os.path.join(images_dir, fname))
+    pc.savefig(os.path.join(images_dir, fname), format="tiff",
+               pil_kwargs={"compression": "tiff_lzw"})
 
     if show_image:
-        pc.figure(figsize=(3, 3))
+        # pc.figure(figsize=(3, 3))
         # plt.imshow(pc, cmap=cmap, origin='lower')
         pc.title('Poincaré Plot for {}'.format(fname), fontsize=14)
         pc.show()
