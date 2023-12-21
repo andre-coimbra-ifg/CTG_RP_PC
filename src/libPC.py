@@ -84,8 +84,8 @@ def create_pc(segment,
     if imsize is not None:
         pc = resize_pc(pc, new_shape=imsize, use_max=True)
 
-    imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
-        pc), format=suffix, compression=compress)
+    imageio.imwrite(os.path.join(images_dir, fname), pc,
+                    format=suffix, compression=compress)
     if show_image:
         plt.figure(figsize=(3, 3))
         plt.imshow(pc, cmap=cmap, origin='lower')
