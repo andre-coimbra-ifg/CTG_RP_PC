@@ -127,7 +127,7 @@ def generate_pc_images(recordings_dir, n_dec=4, clip_stage_II=True,
 
 
 # Configure Poincaré Plot Parameters
-def gen_poincare_params(dimensions=[2], time_delays=[1], percentages=[1, 3, 10], use_clip_vals=[False]):
+def gen_poincare_params(use_clip_vals=False):
     pc_params = []
 
     for dimension in dimensions:
