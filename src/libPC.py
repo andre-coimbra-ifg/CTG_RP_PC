@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 # import pyhrv
 # import pyhrv.nonlinear as nl
 import imageio
+import seaborn as sns
 
 
 # # Load sample data
@@ -21,45 +22,72 @@ import imageio
 TIFF_DEFLATE = 32946
 
 
+def plot_poincare(rr):
+
+    rr_n = rr[:-1]
+    rr_n1 = rr[1:]
+
+    sd1 = np.sqrt(0.5) * np.std(rr_n1 - rr_n)
+    sd2 = np.sqrt(0.5) * np.std(rr_n1 + rr_n)
+
+    m = np.mean(rr)
+    min_rr = np.min(rr)
+    max_rr = np.max(rr)
+
+    sns.set_theme()
+
+    plt.figure(figsize=(6, 6))
+
+    sns.scatterplot(x=rr_n, y=rr_n1)  # color='#51A6D8', marker='s'
+
+    plt.grid(False)
+    plt.axis(False)
+    # plt.show()
+
+    # return plt, sd1, sd2
+    return plt
+
+
 def create_pc(segment,
-              dimension=2, time_delay=1, percentage=1, use_clip=False, knn=None, imsize=None,
+              use_clip=False, knn=None, imsize=None,
               images_dir='', base_name='Sample',
               suffix='tif',  # suffix='jpg', # suffix='png'
               compress=TIFF_DEFLATE,
               show_image=False, cmap=None,  # cmap='gray', cmap='binary'
               ):
-    """Generate recurrence plot for specified signal segment and save to disk"""
+    """Generate poincaré plot for specified signal segment and save to disk"""
 
     if base_name is None:
         base_name = 'sample'
-    fname = '{}_d{}_t{}_p{}{}.{}'.format(base_name, dimension, time_delay, percentage,
-                                         '_clipped' if use_clip else '', suffix)
+    fname = '{}_pc{}.{}'.format(
+        base_name, '_clipped' if use_clip else '', suffix)
 
     segment = np.expand_dims(segment, 0)
     if knn is not None:
-        pc = RecurrencePlot(dimension=dimension, time_delay=time_delay)
-        X_dist = pc.fit_transform(segment)[0]
-        X_pc = mask_knn(X_dist, k=knn, policy='cols')
+        # pc = RecurrencePlot(dimension=dimension, time_delay=time_delay)
+        # X_dist = pc.fit_transform(segment)[0]
+        # X_pc = mask_knn(X_dist, k=knn, policy='cols')
+        pc = plot_poincare(segment)
+        # X_pc = mask_knn(pc, k=knn, policy='cols')
     elif use_clip:
-        pc = RecurrencePlot(dimension=dimension, time_delay=time_delay)
-        X_dist = pc.fit_transform(segment)
-        X_pc = pc_norm(X_dist, threshold='percentage_clipped',
-                       percentage=percentage)[0]
+        pc = plot_poincare(segment)
+        # X_pc = pc_norm(pc, threshold='percentage_clipped', percentage=percentage)[0]
     else:
-        pc = RecurrencePlot(dimension=dimension, time_delay=time_delay,
-                            # threshold='percentage_points', percentage=percentage)
-                            threshold='point', percentage=percentage)
-        X_pc = pc.fit_transform(segment)[0]
+        # pc = RecurrencePlot(dimension=dimension, time_delay=time_delay,
+        #                     # threshold='percentage_points', percentage=percentage)
+        #                     threshold='point', percentage=percentage)
+        # X_pc = pc.fit_transform(segment)[0]
+        pc = plot_poincare(segment)
 
     if imsize is not None:
-        X_pc = resize_pc(X_pc, new_shape=imsize, use_max=True)
+        pc = resize_pc(pc, new_shape=imsize, use_max=True)
 
     imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
-        X_pc), format=suffix, compression=compress)
+        pc), format=suffix, compression=compress)
     if show_image:
         plt.figure(figsize=(3, 3))
-        plt.imshow(X_pc, cmap=cmap, origin='lower')
-        plt.title('Recurrence Plot for {}'.format(fname), fontsize=14)
+        plt.imshow(pc, cmap=cmap, origin='lower')
+        plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
         plt.show()
     return fname
 

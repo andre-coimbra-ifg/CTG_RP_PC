@@ -19,7 +19,6 @@ from libPC import create_pc
 
 def generate_pc_images(recordings_dir, n_dec=4, clip_stage_II=True,
                        max_seg_min=10, policy='early_valid',
-                       pc_params=[{}],
                        images_dir='',
                        images_index_file='pc_images_index.json',
                        show_signal=False, show_image=False, verbose=False, cmap=None,
@@ -112,10 +111,9 @@ def generate_pc_images(recordings_dir, n_dec=4, clip_stage_II=True,
             selected_hr = scipy.signal.decimate(selected_hr, n_dec)
 
         image_names = []
-        for p in pc_params:
-            fname = create_pc(selected_hr, base_name=recno, show_image=show_image,
-                              images_dir=images_dir, cmap=cmap, **p)
-            image_names.append(fname)
+        fname = create_pc(selected_hr, base_name=recno, show_image=show_image,
+                          images_dir=images_dir, cmap=cmap, use_clip=clip_stage_II)
+        image_names.append(fname)
 
         results[recno] = {'names': image_names, 'outcome': meta['Outcome']}
 
@@ -124,17 +122,3 @@ def generate_pc_images(recordings_dir, n_dec=4, clip_stage_II=True,
 
     with open(os.path.join(images_dir, images_index_file), 'w') as outfile:
         json.dump(results, outfile)
-
-
-# Configure Poincaré Plot Parameters
-def gen_poincare_params(use_clip_vals=False):
-    pc_params = []
-
-    for dimension in dimensions:
-        for time_delay in time_delays:
-            for percentage in percentages:
-                for use_clip in use_clip_vals:
-                    pc_params.append({'dimension': dimension, 'time_delay': time_delay,
-                                      'percentage': percentage, 'use_clip': use_clip})
-
-    return pc_params
