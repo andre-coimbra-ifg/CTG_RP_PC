@@ -81,18 +81,18 @@ def create_pc(segment,
         # X_pc = pc.fit_transform(segment)[0]
         pc = plot_poincare(segment)
 
-    if imsize is not None:
-        pc = resize_pc(pc, new_shape=imsize, use_max=True)
+    # if imsize is not None:
+        # pc = resize_pc(pc, new_shape=imsize, use_max=True)
 
     # imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
     #     pc), format=suffix, compression=compress)
     pc.savefig(os.path.join(images_dir, fname))
 
     if show_image:
-        plt.figure(figsize=(3, 3))
-        plt.imshow(pc, cmap=cmap, origin='lower')
-        plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
-        plt.show()
+        pc.figure(figsize=(3, 3))
+        # plt.imshow(pc, cmap=cmap, origin='lower')
+        pc.title('Poincaré Plot for {}'.format(fname), fontsize=14)
+        pc.show()
     return fname
 
 
