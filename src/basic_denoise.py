@@ -2,11 +2,11 @@
 # coding: utf-8
 
 # CTG Basic Denoise
-# 
+#
 # see: https://physionet.org/physiobank/database/ctu-uhb-ctgdb/
 # and 'A Comprehensive Feature Analysis of the Fetal Heart Rate Signal for the Intelligent Assessment of Fetal State'
 
-### Signal Preprocessing
+# Signal Preprocessing
 
 # In clinical practice, during the recording process using Doppler ultrasound, the FHR signal
 # contains many artifacts or spikes due to maternal and fetal movements or transducer displacement [1].
@@ -19,7 +19,7 @@
 #   do not differ by more than 10 bpm, and missing data are excluded when the length of x(i) = 0 is
 #   equal or more than 10 s.
 # - Values of x(i) ≤50 or x(i) ≥ 200  are considered data spikes and are removed using linear interpolation
-# - We extrapolate x(i) using spline interolation again when the difference between x(i) and x(i-1)
+# - We extrapolate x(i) using spline interpolation again when the difference between x(i) and x(i-1)
 #   exceed 25 bpm, a value used to define unstable segments
 
 # Twenty minutes (N = 4800 samples) of signal length was the target used for further continuous
@@ -40,14 +40,16 @@ import matplotlib.pyplot as plt
 
 
 def find_valid_start(sig, n_stable=5, min_delta=10):
-    for i in range(len(sig)-n_stable ):
+    for i in range(len(sig)-n_stable):
         max_value = np.max(sig[i:i+n_stable])
         min_value = np.min(sig[i:i+n_stable])
-        
-        if max_value == 0: continue 
-        if max_value - min_value > min_delta: continue
+
+        if max_value == 0:
+            continue
+        if max_value - min_value > min_delta:
+            continue
         return i
-    
+
     return None
 
 
@@ -59,7 +61,7 @@ def remove_extreme_values(sig_hr, min_hr=50, max_hr=200):
         # print('found masked values', len(mask) - n_valid)
         x = np.arange(len(mask))
         new_sig = np.interp(x, x[mask], sig_hr[mask])
-        
+
     return new_sig, mask
 
 
@@ -69,9 +71,9 @@ def find_gaps(sig):
     gaps = []
     while i_start < len(missing):
         i_start = np.argmax(missing[i_start:]) + i_start  # start of gap
-        if not missing[i_start]: 
+        if not missing[i_start]:
             break
-            
+
         i_end = np.argmin(missing[i_start:]) + i_start   # end of gap
         if i_end == i_start:
             i_end = len(missing)   # reached end
@@ -95,9 +97,9 @@ def trim_short_segments(sig, verbose=False, min_seg=12):
     return sig
 
 
-def find_valid_segments(sig, min_segment_width=8*60*4, 
+def find_valid_segments(sig, min_segment_width=8*60*4,
                         max_allowed_gap=10*4, verbose=False):
-    
+
     gaps = find_gaps(sig)
     gaps = [g for g in gaps if g[0] > max_allowed_gap]
     if verbose:
@@ -108,20 +110,20 @@ def find_valid_segments(sig, min_segment_width=8*60*4,
     n_sig = len(sig)
     valid_segments = []
     seg_start = 0
-    
+
     for _, gap_start, gap_end in gaps:
         seg_end = gap_start               # gap ends valid segment
         n_seg = seg_end - seg_start
         if n_seg >= min_segment_width:    # ignore short segments
             valid_segments.append([seg_start, seg_end])
         seg_start = gap_end
-        
+
     if seg_start < n_sig:     # special case for final segment
         seg_end = n_sig
         n_seg = seg_end - seg_start
         if n_seg >= min_segment_width:
             valid_segments.append([seg_start, seg_end])
-            
+
     if verbose:
         print('valid_segments')
         pprint(valid_segments)
@@ -131,7 +133,7 @@ def find_valid_segments(sig, min_segment_width=8*60*4,
 def filter_extreme_values(seg_hr, min_hr=50, max_hr=200):
     seg_hr[seg_hr < min_hr] = 0
     seg_hr[seg_hr > max_hr] = 0
-    
+
     return seg_hr
 
 
@@ -143,14 +145,15 @@ def replace_missing_values(sig):
     if n_missing > 0 and n_valid > 0:
         x = np.arange(len(valid))
         sig = np.interp(x, x[valid], sig[valid])
-        
+
     return sig, valid
 
 
 def filter_large_changes(sig, valid, tm, max_change=25, w=8, verbose=False):
     sig_d = np.abs(np.diff(sig))
     change_mask = sig_d > max_change
-    change_mask = np.logical_and(change_mask, np.logical_and(valid[1:], valid[:-1]))
+    change_mask = np.logical_and(
+        change_mask, np.logical_and(valid[1:], valid[:-1]))
 
     change_mask = np.logical_or(
         np.pad(change_mask, (1, 0), 'edge'),
@@ -219,7 +222,8 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
             seg_tm = tm[seg_start:seg_end]
 
         seg_hr, mask = replace_missing_values(seg_hr)
-        seg_hr, mask = filter_large_changes(seg_hr, mask, seg_tm, max_change=max_change, verbose=verbose_details)
+        seg_hr, mask = filter_large_changes(
+            seg_hr, mask, seg_tm, max_change=max_change, verbose=verbose_details)
 
         selected_segments.append(
             {'seg_start': seg_start,
@@ -232,7 +236,8 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
 
              })
 
-    selected_segments = sorted(selected_segments, key=lambda x: -x['pct_valid'])
+    selected_segments = sorted(
+        selected_segments, key=lambda x: -x['pct_valid'])
     if verbose:
         for seg in selected_segments:
             seg_start = seg['seg_start']
@@ -260,11 +265,14 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
 
             if verbose_details:
                 plt.figure(figsize=(12, 2))
-                plt.title('{}: Final Signal diff  {}-{}'.format(recno, seg_start, seg_end))
+                plt.title(
+                    '{}: Final Signal diff  {}-{}'.format(recno, seg_start, seg_end))
                 plt.plot(seg_tm[:-1], np.diff(seg_hr))
-                plt.plot([seg_tm[0], seg_tm[-1]], [0,0], 'r--')
-                plt.plot([seg_tm[0], seg_tm[-1]], [max_change, max_change], 'k--')
-                plt.plot([seg_tm[0], seg_tm[-1]], [-max_change, -max_change], 'k--')
+                plt.plot([seg_tm[0], seg_tm[-1]], [0, 0], 'r--')
+                plt.plot([seg_tm[0], seg_tm[-1]],
+                         [max_change, max_change], 'k--')
+                plt.plot([seg_tm[0], seg_tm[-1]],
+                         [-max_change, -max_change], 'k--')
                 plt.xlim(seg_tm[0], seg_tm[-1])
                 plt.show()
 
