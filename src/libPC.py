@@ -7,8 +7,26 @@ import seaborn as sns
 
 TIFF_DEFLATE = 32946
 
+plt.ioff()
 
-def plot_poincare(rr):
+
+def plot_poincare(data):
+
+    plt.scatter(data[:-1], data[1:], s=4, marker='s')
+
+    plt.axis('off')
+    plt.axis("tight")  # gets rid of white border
+    plt.axis("image")
+
+    fig = plt.gcf()
+    fig.canvas.draw()
+    array_data = np.array(fig.canvas.renderer.buffer_rgba())
+    plt.close()
+
+    return array_data
+
+
+def plot_poincare_seaborn(rr):
 
     rr_n = rr[:-1]
     rr_n1 = rr[1:]
@@ -18,13 +36,13 @@ def plot_poincare(rr):
 
     sns.scatterplot(x=rr_n, y=rr_n1)  # color='#51A6D8'
 
-    # plt.figure(figsize=(8, 8))
     plt.axis('off')
     plt.axis("tight")  # gets rid of white border
     plt.axis("image")
     fig = plt.gcf()
     fig.canvas.draw()
     array_data = np.array(fig.canvas.renderer.buffer_rgba())
+    plt.close()
 
     return array_data
 
@@ -61,6 +79,7 @@ def create_pc(segment,
     #     # X_pc = pc.fit_transform(segment)[0]
     #     pc = plot_poincare(segment)
 
+    # pc = plot_poincare(segment)
     pc = plot_poincare(segment)
 
     # if imsize is not None:
