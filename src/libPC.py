@@ -7,8 +7,6 @@ import seaborn as sns
 
 TIFF_DEFLATE = 32946
 
-plt.ioff()
-
 
 def plot_poincare(data):
 
