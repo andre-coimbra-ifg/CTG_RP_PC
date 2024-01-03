@@ -110,10 +110,13 @@ def generate_pc_images(recordings_dir, n_dec=4, clip_stage_II=True,
         if n_dec > 1:
             selected_hr = scipy.signal.decimate(selected_hr, n_dec)
 
-        image_name = create_pc(selected_hr, base_name=recno, show_image=show_image,
-                               images_dir=images_dir, cmap=cmap, use_clip=clip_stage_II)
+        # TODO: mudar para único arquivo, alterar no arquivo compute_metadata -> annotate_train_valid_group
+        image_names = []
+        fname = create_pc(selected_hr, base_name=recno, show_image=show_image,
+                          images_dir=images_dir, cmap=cmap, use_clip=clip_stage_II)
+        image_names.append(fname)
 
-        results[recno] = {'names': image_name, 'outcome': meta['Outcome']}
+        results[recno] = {'names': image_names, 'outcome': meta['Outcome']}
 
 #     if verbose:
 #         pprint(results)
