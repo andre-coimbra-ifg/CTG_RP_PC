@@ -43,7 +43,8 @@ def create_rp(segment,
         X_rp = resize_rp(X_rp, new_shape=imsize)
 
     imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
-        X_rp), format=suffix, compression=compress)
+        X_rp), format=suffix, **{"compression": compress})
+
     if show_image:
         plt.figure(figsize=(3, 3))
         plt.imshow(X_rp, cmap=cmap, origin='lower')

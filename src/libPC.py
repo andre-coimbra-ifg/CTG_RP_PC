@@ -2,22 +2,8 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-# # from pyts.image import RecurrencePlot
-# import pyhrv
-# import pyhrv.nonlinear as nl
 import imageio
 import seaborn as sns
-
-
-# # Load sample data
-# nni = pyhrv.utils.load_sample_nni()
-
-# # Compute Poincaré using NNI series
-# # results = nl.poincare(nni)
-# results = nl.poincare(nni, ellipse=False, vectors=False, legend=False)
-
-# # Print SD1
-# print(results['sd1'])
 
 TIFF_DEFLATE = 32946
 
@@ -30,22 +16,17 @@ def plot_poincare(rr):
     sd1 = np.sqrt(0.5) * np.std(rr_n1 - rr_n)
     sd2 = np.sqrt(0.5) * np.std(rr_n1 + rr_n)
 
-    m = np.mean(rr)
-    min_rr = np.min(rr)
-    max_rr = np.max(rr)
+    sns.scatterplot(x=rr_n, y=rr_n1)  # color='#51A6D8'
 
-    sns.set_theme()
+    # plt.figure(figsize=(8, 8))
+    plt.axis('off')
+    plt.axis("tight")  # gets rid of white border
+    plt.axis("image")
+    fig = plt.gcf()
+    fig.canvas.draw()
+    array_data = np.array(fig.canvas.renderer.buffer_rgba())
 
-    # plt.figure(figsize=(6, 6))
-
-    p1 = sns.scatterplot(x=rr_n, y=rr_n1)  # color='#51A6D8', marker='s'
-
-    # plt.grid(False)
-    # plt.axis(False)
-    # plt.show()
-
-    # return plt, sd1, sd2
-    return p1
+    return array_data
 
 
 def create_pc(segment,
@@ -62,7 +43,6 @@ def create_pc(segment,
     fname = '{}_pc{}.{}'.format(
         base_name, '_clipped' if use_clip else '', suffix)
 
-    # print(segment)
     # segment = np.expand_dims(segment, 0)
 
     # if knn is not None:
@@ -87,15 +67,17 @@ def create_pc(segment,
     # pc = resize_pc(pc, new_shape=imsize, use_max=True)
 
     # imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
-    #     pc), format=suffix, compression=compress)
-    pc.savefig(os.path.join(images_dir, fname), format=suffix,
-               pil_kwargs={"compression": "tiff_lzw"})
+    #     pc), format=suffix, **{"compression": compress})
+
+    imageio.imwrite(os.path.join(images_dir, fname), pc,
+                    format=suffix, **{"compression": compress})
 
     if show_image:
-        # pc.figure(figsize=(3, 3))
-        # plt.imshow(pc, cmap=cmap, origin='lower')
-        pc.title('Poincaré Plot for {}'.format(fname), fontsize=14)
-        pc.show()
+        plt.figure(figsize=(3, 3))
+        plt.imshow(pc, cmap=cmap, origin='upper')
+        plt.axis('off')
+        plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
+        plt.show()
     return fname
 
 
