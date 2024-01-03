@@ -92,7 +92,7 @@ def create_pc(segment,
                     format=suffix, **{"compression": compress})
 
     if show_image:
-        plt.figure(figsize=(3, 3))
+        plt.figure(figsize=(5, 5))
         plt.imshow(pc, cmap=cmap, origin='upper')
         plt.axis('off')
         plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
