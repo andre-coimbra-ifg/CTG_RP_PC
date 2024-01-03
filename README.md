@@ -1,4 +1,4 @@
-# COIMBRA CTG_RP_PC
+# CTG_RP_PC
 ML/DL analysis of Cardiotocography (CTG) traces using Recurrence Plot and Poincaré Plot.
 
 This repo was forked from Williams Doug's (https://github.com/williamsdoug/CTG_RP).
