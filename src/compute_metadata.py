@@ -85,7 +85,7 @@ def annotate_train_valid_group(group, data, exclude=[], include=[]):
 
 
 def get_splits(image_dir='images', image_file='rp_images_index.json',
-               thresh=7.15, exclude=[], include=[], verbose=False, n_splits=1):
+               thresh=7.15, exclude=[], include=[], verbose=False, n_splits=2):
     random.seed(1234)
     with open(os.path.join(image_dir, image_file), 'r') as infile:
         data = json.load(infile)
