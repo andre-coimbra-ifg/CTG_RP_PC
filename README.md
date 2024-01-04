@@ -62,9 +62,10 @@ Other Notebooks:
   - [pyts](https://pyts.readthedocs.io/en/latest/)
     - Used for generation of Recurrence Plots
     - `pip install pyts`
-  - [FastAI V1](https://docs.fast.ai/) library running on [PyTorch](https://pytorch.org/)
+  - [FastAI](https://docs.fast.ai/) library running on [PyTorch](https://pytorch.org/)
     - Used for deep learning
     - Installed by default on Google Colab
+    - Version: 2.7.13
   - [wfdb](https://wfdb.readthedocs.io/en/latest/index.html)
     - Waveform Database Utilities.  Used to read Physionet Recording Files
     - `pip install wfdb`
