@@ -1,7 +1,7 @@
 # CTG_RP_PC
 ML/DL analysis of Cardiotocography (CTG) traces using Recurrence Plot and Poincaré Plot.
 
-This repo was forked from Williams Doug's (https://github.com/williamsdoug/CTG_RP).
+This repo was forked from [Williams Doug's CTG_RP repo](https://github.com/williamsdoug/CTG_RP).
 
 The original repo contained Jupyter Notebooks and code to reproduce the results of the paper [Computer-Aided Diagnosis System of Fetal Hypoxia Incorporating Recurrence Plot With Convolutional Neural Network](https://www.frontiersin.org/articles/10.3389/fphys.2019.00255/full)
  by Zhidong Zhao, Yang Zhang, Zafer Comert and Yanjun Deng.
