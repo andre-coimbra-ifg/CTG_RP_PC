@@ -9,7 +9,7 @@ The original repo contained Jupyter Notebooks and code to reproduce the results 
 The Notebooks and the code were adapted to check the results with Recurrence Plot and Poincaré Plot. The images were saved in the TIFF format, using the DEFLATE compression scheme, considering the paper [Compression of Different Time Series Representations in Asphyxia Detection](https://ieeexplore.ieee.org/iel7/9991246/9991267/09991468.pdf)
  by Bárbara Silva, Maria Ribeiro and Teresa S. Henriques.
 
-This work was developed during the course Special Topics in Computer Systems - Graduate Program in Computer Science - Federal University of Goiás - Brazil.
+This repo was made for the final project requirements of the course Special Topics in Computer Systems, Graduate Program in Computer Science, UFG, 2023/2.
 
 ## Implementation Details
 
