@@ -8,13 +8,24 @@ import seaborn as sns
 TIFF_DEFLATE = 32946
 
 
+def calculate_rr(frh):
+
+    rr = 60*1000 / frh
+
+    return rr
+
+
 def plot_poincare(data):
 
-    plt.scatter(data[:-1], data[1:], s=4, marker='s')
+    rr = calculate_rr(data)
+
+    plt.scatter(rr[:-1], rr[1:], s=4, marker='s')
 
     plt.axis('off')
-    plt.axis("tight")  # gets rid of white border
-    plt.axis("image")
+    plt.axis('tight')  # gets rid of white border
+    plt.axis('image')
+    # plt.xlabel('RR$_n$ (ms)')
+    # plt.ylabel('RR$_{n+1}$ (ms)')
 
     fig = plt.gcf()
     fig.canvas.draw()
@@ -92,7 +103,8 @@ def create_pc(segment,
     if show_image:
         plt.figure(figsize=(5, 5))
         plt.imshow(pc, cmap=cmap, origin='upper')
-        plt.axis('off')
+        plt.xlabel('RR$_n$ (ms)')
+        plt.ylabel('RR$_{n+1}$ (ms)')
         plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
         plt.show()
     return fname

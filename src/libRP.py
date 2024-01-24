@@ -47,8 +47,13 @@ def create_rp(segment,
 
     if show_image:
         plt.figure(figsize=(3, 3))
+        # plt.figure(figsize=(5, 5))
         plt.imshow(X_rp, cmap=cmap, origin='lower')
         plt.title('Recurrence Plot for {}'.format(fname), fontsize=14)
+        # plt.xlabel("Time [seconds]")
+        # plt.ylabel("Time [seconds]")
+        # # plt.ylim(600, 0)
+        # plt.gca().invert_yaxis()
         plt.show()
     return fname
 
