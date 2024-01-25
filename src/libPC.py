@@ -102,9 +102,7 @@ def create_pc(segment,
 
     if show_image:
         plt.figure(figsize=(5, 5))
-        plt.imshow(pc, cmap=cmap, origin='upper')
-        plt.xlabel('RR$_n$ (ms)')
-        plt.ylabel('RR$_{n+1}$ (ms)')
+        plt.imshow(pc, cmap=cmap, origin='lower')
         plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
         plt.show()
     return fname
