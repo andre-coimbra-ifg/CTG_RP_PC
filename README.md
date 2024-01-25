@@ -20,7 +20,7 @@ Key Jupyter Notebooks (_currently configured to run on Google Colab per below_):
     -  RP Images based on latest valid 10min CTG segment
   -  CTG recordings partitioned into Train and Valid
   -  Trains FastAI Model
-    - Uses transfer learning to train using ResNetX [18, 34, 50] model
+     -  Uses transfer learning to train using ResNetX [18, 34, 50] model
  
   
 
@@ -30,7 +30,7 @@ Key Jupyter Notebooks (_currently configured to run on Google Colab per below_):
     -  PC Images based on latest valid 10min CTG segment
   -  CTG recordings partitioned into Train and Valid
   -  Trains FastAI Model
-    - Uses transfer learning to train using ResNetX [18, 34, 50] model
+    -  Uses transfer learning to train using ResNetX [18, 34, 50] model
  
 Other Notebooks:
 - [CTG_RP_Display_Denoised](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_RP_Display_Denoised.ipynb)
