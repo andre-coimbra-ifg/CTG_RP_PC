@@ -13,7 +13,7 @@ This repo was made for the final project requirements of the course Special Topi
 
 ## Implementation Details
 
-Key Jupyter Notebooks (_currently configured to run on Google Colab per below_):
+Key Jupyter Notebooks (_currently configured to run on Google Colab_):
 - [CTG_RP_ResNet](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_RP_ResNet.ipynb)
   - Initializes fresh colab instance, downloading source files, packages and dataset
   - Generates RP images
