@@ -38,6 +38,9 @@ Other Notebooks:
   
 - [CTG_Generate_Recurrence_Plots](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Generate_Recurrence_Plots.ipynb)
   - Creates individual RP Images.  _IMAGES_DIR/rp_images_index.json_ contains metadata associated with images for each recording
+ 
+- [CTG_Generate_Poincaré_Plots](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Generate_Poincar%C3%A9_Plots.ipynb)
+  - Creates individual PC Images.  _IMAGES_DIR/pc_images_index.json_ contains metadata associated with images for each recording
   
 - [CTG_Explore_Datasets](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Explore_Datasets.ipynb)
   - Builds Databunch and displays contents
