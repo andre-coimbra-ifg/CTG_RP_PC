@@ -2,17 +2,15 @@
 # Colab Notebook Configuration
 #
 
-
 GITHUB_PREFIX = 'https://raw.githubusercontent.com/andre-coimbra-ifg/CTG_RP_PC/master/src/'
 GITHUB_DEFAULT_SRC_FILES = [
     'basic_denoise.py',
     'compute_metadata.py',
     'ctg_utils.py',
-    'libRP.py',
     'generate_recurrence_images.py',
     'generate_poincare_images.py',
     'libPC.py',
-    'test.py',  # used for test purposes only, TODO:  Delete after development complete
+    'libRP.py',
 ]
 
 RECORDINGS_DIR = '/content/ctu-uhb-ctgdb'

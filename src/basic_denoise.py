@@ -135,6 +135,7 @@ def filter_large_changes(sig, valid, tm, max_change=25, verbose=False):
                       np.pad(change_mask, (3, 0), 'edge')[:-2]))
 
     if np.sum(change_mask) > 0:
+        print(np.sum(change_mask))
         x = np.arange(len(change_mask))
         sig = np.interp(x, x[~change_mask], sig[~change_mask])
         valid[change_mask] = False
@@ -167,7 +168,8 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
 
     # 1. Remove gaps greater than 15 seconds
     valid_segments = find_valid_segments(
-        sig_hr, min_segment_width=0, verbose=verbose_details)
+        sig_hr, verbose=verbose_details)
+    # min_segment_width = 0
 
     selected_segments = []
     for seg_start, seg_end in valid_segments:
@@ -190,12 +192,12 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
         # 2. Linear interpolation on small gaps
         seg_hr, mask = filter_missing_values(seg_hr)
 
-        # 3. Hermite Spline Interpolation on spikes (50 < fhr < 200)
-        seg_hr, mask = filter_extreme_values(seg_hr, mask)
-
-        # 4. Linear interpolation to stabilize signal (diff < 25bpm)
+        # 3. Linear interpolation to stabilize signal (diff < 25bpm)
         seg_hr, mask = filter_large_changes(
             seg_hr, mask, seg_tm, max_change=max_change, verbose=verbose_details)
+
+        # 4. Hermite Spline Interpolation on spikes (50 < fhr < 200)
+        seg_hr, mask = filter_extreme_values(seg_hr, mask)
 
         selected_segments.append(
             {'seg_start': seg_start,
