@@ -1,9 +1,12 @@
+#!/usr/bin/env python
+# coding: utf-8
+
 
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
-import seaborn as sns
+from scipy.ndimage import gaussian_filter
 
 TIFF_DEFLATE = 32946
 
@@ -24,30 +27,7 @@ def plot_poincare(data):
     plt.axis('off')
     plt.axis('tight')  # gets rid of white border
     plt.axis('image')
-    # plt.xlabel('RR$_n$ (ms)')
-    # plt.ylabel('RR$_{n+1}$ (ms)')
 
-    fig = plt.gcf()
-    fig.canvas.draw()
-    array_data = np.array(fig.canvas.renderer.buffer_rgba())
-    plt.close()
-
-    return array_data
-
-
-def plot_poincare_seaborn(rr):
-
-    rr_n = rr[:-1]
-    rr_n1 = rr[1:]
-
-    sd1 = np.sqrt(0.5) * np.std(rr_n1 - rr_n)
-    sd2 = np.sqrt(0.5) * np.std(rr_n1 + rr_n)
-
-    sns.scatterplot(x=rr_n, y=rr_n1)  # color='#51A6D8'
-
-    plt.axis('off')
-    plt.axis("tight")  # gets rid of white border
-    plt.axis("image")
     fig = plt.gcf()
     fig.canvas.draw()
     array_data = np.array(fig.canvas.renderer.buffer_rgba())
@@ -71,31 +51,8 @@ def create_pc(segment,
         base_name, '_clipped' if use_clip else '', suffix)
 
     # segment = np.expand_dims(segment, 0)
-
-    # if knn is not None:
-    #     # pc = RecurrencePlot(dimension=dimension, time_delay=time_delay)
-    #     # X_dist = pc.fit_transform(segment)[0]
-    #     # X_pc = mask_knn(X_dist, k=knn, policy='cols')
-    #     pc = plot_poincare(segment)
-    #     # X_pc = mask_knn(pc, k=knn, policy='cols')
-    # elif use_clip:
-    #     pc = plot_poincare(segment)
-    #     # X_pc = pc_norm(pc, threshold='percentage_clipped', percentage=percentage)[0]
-    # else:
-    #     # pc = RecurrencePlot(dimension=dimension, time_delay=time_delay,
-    #     #                     # threshold='percentage_points', percentage=percentage)
-    #     #                     threshold='point', percentage=percentage)
-    #     # X_pc = pc.fit_transform(segment)[0]
-    #     pc = plot_poincare(segment)
-
     # pc = plot_poincare(segment)
-    pc = plot_poincare(segment)
-
-    # if imsize is not None:
-    # pc = resize_pc(pc, new_shape=imsize, use_max=True)
-
-    # imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
-    #     pc), format=suffix, **{"compression": compress})
+    pc = msp_plots(segment)
 
     imageio.imwrite(os.path.join(images_dir, fname), pc,
                     format=suffix, **{"compression": compress})
@@ -104,7 +61,10 @@ def create_pc(segment,
         plt.figure(figsize=(5, 5))
         plt.imshow(pc, cmap=cmap, origin='lower')
         plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
+        plt.xlabel('RR$_n$ (ms)')
+        plt.ylabel('RR$_{n+1}$ (ms)')
         plt.show()
+
     return fname
 
 
@@ -114,104 +74,211 @@ def np_to_uint8(X):
     return X.astype(np.uint8)
 
 
-def pc_norm(X_dist, threshold=None, percentage=10):
-    """Rescale Recurrence Plot after setting nearest-neighbor threshold"""
-    n_samples = X_dist.shape[0]    # typically value is 1
-    image_size = X_dist.shape[-1]
+def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, save=False):
+    # def msp_plots(X, scales=12, scstep=1, nrow=3, ncol=4, save=False):
+    """
+    MSP function creates an ensemble of Poincare Plots, one for each coarse grained time series
 
-    assert threshold is not None
+    Parameters:
+        X (np.ndarray): a time series vector with one column.
+        scales (int, optional): the number of time scales. Default is 12.
+        scstep (int, optional): Poincare plots from 1 to scale by scstep. Default is 1.
+        nrow (int, optional): number of rows in the plot montage. Default is 3.
+        ncol (int, optional): number of columns in the plot montage. Default is 4.
+        save (bool, optional): if True, saves the figure as 'Figure1.jpg'. Default is True.
+    """
 
-    if threshold == 'percentage_points':
-        percents = np.percentile(
-            np.reshape(X_dist, (n_samples, image_size * image_size)),
-            percentage, axis=1
-        )
-        X_pc = X_dist < percents[:, None, None]
-    if threshold == 'percentage_clipped':
-        percents = np.percentile(
-            np.reshape(X_dist, (n_samples, image_size * image_size)),
-            percentage, axis=1
-        )
-        for i in range(n_samples):
-            X_dist[i, X_dist[i] < percents[i]] = percents[i]
-            X_dist[i] = percents[i] / X_dist[i]
-        X_pc = X_dist**2
-    elif threshold == 'percentage_distance':
-        percents = percentage / 100 * np.max(X_dist, axis=(1, 2))
-        X_pc = X_dist < percents[:, None, None]
+    if not isinstance(X, np.ndarray) or X.ndim != 1:
+        raise ValueError('X must be a numeric vector')
+
+    if not isinstance(scales, int) or scales <= 0:
+        raise ValueError('scales must be a positive integer')
+
+    if not isinstance(scstep, int) or scstep <= 0:
+        raise ValueError('scstep must be a positive integer')
+
+    if not isinstance(nrow, int) or nrow <= 0:
+        raise ValueError('nrow must be a positive integer')
+
+    if not isinstance(ncol, int) or ncol <= 0:
+        raise ValueError('ncol must be a positive integer')
+
+    S0 = range(1, scales + 1, scstep)
+
+    if len(S0) > nrow * ncol:
+        raise ValueError(
+            'Adjust the number of plots by number of rows and columns to be displayed')
+
+    Xmin = np.floor(np.min(X) * 10) / 10 - 0.05
+    Xmax = np.ceil(np.max(X) * 10) / 10 + 0.05
+    Xstep = round((Xmax - Xmin) / 5 * 10) / 10
+    ticks = np.arange(Xmin, Xmax + Xstep, Xstep)
+
+    fig, axes = plt.subplots(nrow, ncol, figsize=(7, 7))
+    if nrow * ncol == 1:
+        axes = [axes]
     else:
-        X_pc = X_dist < threshold
-    return X_pc.astype('float64')
+        axes = axes.flatten()
+
+    for idx, s in enumerate(S0):
+        ys = coarse_grain(X, s)
+        yp = ys[:-1]
+        ym = ys[1:]
+
+        ax = axes[idx]
+        # sc = ax.scatter(yp, ym, c='b', alpha=0.5, edgecolors='none')
+        sc = dscatter(yp, ym, smoothing=20, bins=[
+            700, 700], plottype='scatter', marker='s', msize=3, filled=True)
+
+        # ax.set_xlim([Xmin, Xmax])
+        # ax.set_ylim([Xmin, Xmax])
+        # ax.set_xticks(ticks)
+        # ax.set_yticks(ticks)
+        # ax.grid(True)
+        # ax.set_title(f'z_{s}(i) vs z_{s}(i+1)')
+        # ax.set_xlabel(f'z_{s}(i)')
+        # ax.set_ylabel(f'z_{s}(i+1)')
+
+    for ax in axes[len(S0):]:
+        fig.delaxes(ax)
+
+    if save:
+        plt.savefig('../content/images/Figure1.jpg', dpi=300,
+                    pad_inches=0, bbox_inches='tight')
+
+    fig = plt.gcf()
+    fig.canvas.draw()
+    array_data = np.array(fig.canvas.renderer.buffer_rgba())
+    plt.close()
+
+    return array_data
 
 
-def mask_knn(m, k=1, policy='cols'):
-    """Creates mask showing knn in each row/column of adjacency matrix"""
-    assert policy in ['cols', 'rows']
-    mask = np.zeros(m.shape, dtype='bool')
-    if policy == 'rows':
-        assert m.shape[0] >= k
-        vals = np.partition(m, k+1, axis=1)[:, k]  # kth value in each row
-        for i in range(m.shape[0]):
-            mask[i][m[i] <= vals[i]] = True
-    else:
-        assert m.shape[1] >= k
-        vals = np.partition(m, k+1, axis=0)[k, :]  # kth value in each column
-        for i in range(m.shape[1]):
-            mask[:, i][m[:, i] <= vals[i]] = True
-    return mask
+def coarse_grain(x, s):
+    """
+    Creates Coarse Grain time series for scale s by averaging s consecutive non-overlapping data points
+
+    Parameters:
+        x (np.ndarray): input time series
+        s (int): scale factor
+
+    Returns:
+        np.ndarray: coarse-grained time series
+    """
+    L = len(x)
+    Jmax = L // s
+    y_s = np.zeros(Jmax)
+
+    for j in range(Jmax):
+        ind1 = j * s
+        ind2 = (j + 1) * s
+        y_s[j] = np.mean(x[ind1:ind2])
+
+    return y_s
 
 
-def compute_padding(w, n_align=64):
-    """compute required padding for given dimension to naturally align"""
-    if w % n_align > 0:
-        new_w = ((w // n_align) + 1) * n_align
-    else:
-        new_w = w
-    pad = new_w - w
-    pad_l = pad // 2
-    pad_r = pad - pad_l
-    return new_w, pad_l, pad_r
+# Example usage:
+# X = np.random.randn(1000)
+# msp_plots(X)
 
 
-def align_pc(m, n_align=64):
-    """Apply padding to align matrix to given multiple"""
-    rows, cols = m.shape
+# df = pd.read_csv('../content/1005_60min.csv')
 
-    new_rows, pad_rows_l, pad_rows_r = compute_padding(rows, n_align)
-    new_cols, pad_cols_l, pad_cols_r = compute_padding(cols, n_align)
-    if rows == new_rows and cols == new_cols:
-        padded_m = m
-    else:
-        padded_m = np.zeros((new_rows, new_cols), dtype=bool)
+# length = 10 * 4 * 60
+# # rr_intervals = df['hr'].tail(length).head(2400).values
+# rr_intervals = df['hr'].tail(length).values
 
-        if rows == new_rows:
-            padded_m[:, pad_cols_l:-pad_cols_r] = a
-        elif cols == new_cols:
-            padded_m[pad_rows_l:-pad_rows_r, :] = a
+# msp_plots(rr_intervals, 1, 1, 1, 1)
+
+
+def dscatter(X, Y, **kwargs):
+    # Default parameters
+    lambda_val = 20
+    nbins = None
+    plottype = 'scatter'
+    logy = False
+    msize = 10
+    marker = 's'
+    filled = True
+
+    # Handle additional arguments
+    for key, value in kwargs.items():
+        if key == 'smoothing':
+            lambda_val = value
+        elif key == 'bins':
+            nbins = value if isinstance(value, (list, tuple)) else [
+                value, value]
+        elif key == 'plottype':
+            plottype = value
+        elif key == 'logy':
+            logy = value
+            if logy:
+                Y = np.log10(Y)
+        elif key == 'marker':
+            marker = value
+        elif key == 'msize':
+            msize = value
+        elif key == 'filled':
+            filled = value
         else:
-            print('')
-            print(padded_m.shape)
-            print(padded_m[pad_rows_l:-pad_rows_r,
-                  pad_cols_l:-pad_cols_r].shape)
-            padded_m[pad_rows_l:-pad_rows_r, pad_cols_l:-pad_cols_r] = m
-    return padded_m
+            raise ValueError(f"Unknown parameter: {key}")
 
+    # Calculate the bin edges and centers
+    if nbins is None:
+        nbins = [min(len(np.unique(X)), 200), min(len(np.unique(Y)), 200)]
 
-def resize_pc(mat, new_shape=64, use_mean=False):
-    mat = align_pc(mat, n_align=new_shape)
+    minx, maxx = np.min(X), np.max(X)
+    miny, maxy = np.min(Y), np.max(Y)
+    edges1 = np.linspace(minx, maxx, nbins[0] + 1)
+    ctrs1 = edges1[:-1] + 0.5 * np.diff(edges1)
+    edges2 = np.linspace(miny, maxy, nbins[1] + 1)
+    ctrs2 = edges2[:-1] + 0.5 * np.diff(edges2)
 
-    rows, cols = mat.shape[0], mat.shape[1]
-    downscale_row, downscale_col = rows // new_shape, cols // new_shape
-    if use_mean:
-        result = np.zeros((new_shape, new_shape))
-        for i, ii in enumerate(range(0, rows, downscale_row)):
-            for j, jj in enumerate(range(0, cols, downscale_col)):
-                result[i, j] = np.mean(
-                    mat[ii:ii + downscale_row, jj:jj + downscale_col])
-    else:
-        result = np.zeros((new_shape, new_shape), dtype=bool)
-        for i, ii in enumerate(range(0, rows, downscale_row)):
-            for j, jj in enumerate(range(0, cols, downscale_col)):
-                result[i, j] = np.max(
-                    mat[ii:ii + downscale_row, jj:jj + downscale_col])
-    return result
+    # Digitize the data
+    bin1 = np.digitize(X, edges1) - 1
+    bin2 = np.digitize(Y, edges2) - 1
+
+    # Ensure bins are within the range
+    bin1[bin1 >= nbins[0]] = nbins[0] - 1
+    bin2[bin2 >= nbins[1]] = nbins[1] - 1
+
+    H, _, _ = np.histogram2d(Y, X, bins=nbins)
+
+    # Smooth the histogram
+    H = H / H.sum()
+    H = gaussian_filter(H, sigma=lambda_val)
+
+    if logy:
+        ctrs2 = 10 ** ctrs2
+
+    plt.axis('off')
+
+    if plottype == 'surf':
+        Xgrid, Ygrid = np.meshgrid(ctrs1, ctrs2)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(Xgrid, Ygrid, H, edgecolor='none')
+    elif plottype == 'mesh':
+        Xgrid, Ygrid = np.meshgrid(ctrs1, ctrs2)
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_wireframe(Xgrid, Ygrid, H)
+    elif plottype == 'contour':
+        plt.contour(ctrs1, ctrs2, H)
+    elif plottype == 'image':
+        plt.imshow(H, extent=[minx, maxx, miny, maxy],
+                   origin='lower', aspect='auto')
+        plt.colorbar()
+    elif plottype == 'scatter':
+        F = H.flatten()
+        ind = bin2 * nbins[0] + bin1
+        col = F[ind]
+
+        plt.scatter(X, Y, c=col, s=msize, marker=marker, cmap='jet',
+                    edgecolor='none' if filled else 'k')
+
+    if logy:
+        plt.yscale('log')
+
+    plt.tight_layout()
+    plt.margins(0, 0)

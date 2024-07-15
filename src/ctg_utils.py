@@ -1,17 +1,15 @@
-import wfdb
-import os
-from pprint import pprint
+#!/usr/bin/env python
+# coding: utf-8
 
+import os
 import numpy as np
-import matplotlib.pyplot as plt
-import scipy
-import scipy.signal
+
 
 def get_all_recno(dbdir):
-    for f in os.listdir(dbdir) :
+    for f in os.listdir(dbdir):
         if os.path.isfile(os.path.join(dbdir, f)) and f.endswith('.hea'):
             yield f.split('.')[0]
-            
+
 
 def parse_meta_comments(comments, verbose=False):
     result = {}
@@ -28,7 +26,7 @@ def parse_meta_comments(comments, verbose=False):
         idx = c.rfind(' ')
         k = c[:idx].strip()
         v = c[idx+1:]
-        
+
         try:
             v = int(v)
         except Exception:
@@ -45,6 +43,6 @@ def parse_meta_comments(comments, verbose=False):
 def physionet_ctg_generate_mask(sig):
     mask = (sig != 0)
     all_idx = np.arange(len(sig))
-    
+
     new_sig = np.interp(all_idx, all_idx[mask], sig[mask])
     return mask, new_sig

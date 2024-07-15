@@ -10,19 +10,18 @@ TIFF_DEFLATE = 32946
 
 def create_rp(segment,
               dimension=2, time_delay=1, percentage=1, use_clip=False, knn=None, imsize=None,
-              images_dir='', base_name='Sample',
+              images_dir='', base_name='sample',
               suffix='tif',  # suffix='jpg', # suffix='png'
               compress=TIFF_DEFLATE,
               show_image=False, cmap=None,  # cmap='gray', cmap='binary'
               ):
     """Generate recurrence plot for specified signal segment and save to disk"""
 
-    if base_name is None:
-        base_name = 'sample'
     fname = '{}_d{}_t{}_p{}{}.{}'.format(base_name, dimension, time_delay, percentage,
                                          '_clipped' if use_clip else '', suffix)
 
     segment = np.expand_dims(segment, 0)
+
     if knn is not None:
         rp = RecurrencePlot(dimension=dimension, time_delay=time_delay)
         X_dist = rp.fit_transform(segment)[0]
@@ -34,26 +33,23 @@ def create_rp(segment,
                        percentage=percentage)[0]
     else:
         rp = RecurrencePlot(dimension=dimension, time_delay=time_delay,
-                            # threshold='percentage_points', percentage=percentage)
                             threshold='point', percentage=percentage)
         X_rp = rp.fit_transform(segment)[0]
 
     if imsize is not None:
-        # X_rp = resize_rp(X_rp, new_shape=imsize, use_max=True)
+        # X_rp = resize_rp(X_rp, new_shape=imsize, use_mean=True)
         X_rp = resize_rp(X_rp, new_shape=imsize)
 
     imageio.imwrite(os.path.join(images_dir, fname), np_to_uint8(
         X_rp), format=suffix, **{"compression": compress})
 
     if show_image:
-        plt.figure(figsize=(3, 3))
-        # plt.figure(figsize=(5, 5))
+        plt.figure(figsize=(5, 5))
         plt.imshow(X_rp, cmap=cmap, origin='lower')
         plt.title('Recurrence Plot for {}'.format(fname), fontsize=14)
         # plt.xlabel("Time [seconds]")
         # plt.ylabel("Time [seconds]")
-        # # plt.ylim(600, 0)
-        # plt.gca().invert_yaxis()
+        plt.gca().invert_yaxis()
         plt.show()
     return fname
 

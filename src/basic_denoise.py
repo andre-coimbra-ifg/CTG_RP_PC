@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import PchipInterpolator
 from pprint import pprint
+
+POLICIES = ['best_quality', 'early_valid', 'late_valid']
 
 
 def find_valid_start(sig, n_stable=1, min_delta=25):
@@ -135,7 +138,6 @@ def filter_large_changes(sig, valid, tm, max_change=25, verbose=False):
                       np.pad(change_mask, (3, 0), 'edge')[:-2]))
 
     if np.sum(change_mask) > 0:
-        print(np.sum(change_mask))
         x = np.arange(len(change_mask))
         sig = np.interp(x, x[~change_mask], sig[~change_mask])
         valid[change_mask] = False
@@ -168,8 +170,8 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
 
     # 1. Remove gaps greater than 15 seconds
     valid_segments = find_valid_segments(
-        sig_hr, verbose=verbose_details)
-    # min_segment_width = 0
+        sig_hr, min_segment_width=2*60*4, verbose=verbose_details)
+    #  min_segment_width=0,
 
     selected_segments = []
     for seg_start, seg_end in valid_segments:
@@ -254,3 +256,93 @@ def get_valid_segments(orig_hr, ts, recno, max_change=25, verbose=False, verbose
             print('Valid: {:0.1f}%'.format(100 * pct_valid))
 
     return selected_segments
+
+
+def save_xlsx(result, name):
+
+    # selected_columns = ['seg_hr', 'seg_ts', 'orig_seg_hr', 'mask']
+    selected_columns = ['seg_hr']
+
+    new_data = {col: result[col] for col in selected_columns}
+
+    df = pd.DataFrame(new_data)
+    df = df.round(2)
+
+    file_path = 'result_'+name+'.xlsx'
+
+    df.to_excel(file_path, index=False)
+
+
+def get_segment_concatenation(orig_hr, ts, recno, max_seg_min=3, policy='early_valid'):
+    """Returns a concatenation of valid segments as close as possible to the desired length in minutes"""
+
+    # get segments with lowest error rate
+    selected_segments = get_valid_segments(orig_hr, ts, recno)
+
+    if len(selected_segments) == 0:
+        return {}
+
+    max_seg = max_seg_min*60*4  # convert minutes to samples
+
+    if policy == 'early_valid':
+        selected_segments = sorted(
+            selected_segments, key=lambda x: x['seg_start'])
+    elif policy == 'late_valid':
+        selected_segments = sorted(
+            selected_segments, key=lambda x: -x['seg_end'])
+
+    seg_columns = ['seg_hr', 'seg_ts', 'orig_seg_hr', 'mask']
+
+    result = {'seg_start': [], 'seg_end': [], 'seg_hr': [],
+              'seg_ts': [], 'orig_seg_hr': [], 'mask': np.bool_([]), 'pct_valid': None}
+
+    if policy == 'best_quality' or policy == 'early_valid':
+        for seg in selected_segments:
+            if len(result['seg_hr']) >= max_seg:
+                break
+            for col in seg_columns:
+                result[col] = np.concatenate(
+                    [result[col], seg[col]])
+
+        # save_xlsx(result, 'initial')
+        for col in seg_columns:
+            result[col] = result[col][:max_seg]
+
+    elif policy == 'late_valid':
+        for seg in selected_segments:
+            if len(result['seg_hr']) >= max_seg:
+                break
+
+            for col in seg_columns:
+                result[col] = np.concatenate(
+                    [seg[col], result[col]])
+
+        # save_xlsx(result, 'initial')
+        for col in seg_columns:
+            result[col] = result[col][-max_seg:]
+
+    result['seg_start'] = np.int64((result['seg_ts'][0]*4))
+    result['seg_end'] = np.int64((result['seg_ts'][-1]*4)+1)
+    result['pct_valid'] = np.mean(result['mask'])
+    # save_xlsx(result, 'final')
+
+    return result
+
+
+def get_segment_removing_zeros(orig_hr, ts, recno, max_seg_min=3, policy='early_valid'):
+    """Returns a concatenation of valid segments as close as possible to the desired length in minutes"""
+
+    result = {'seg_start': [], 'seg_end': [], 'seg_hr': [],
+              'seg_ts': [], 'orig_seg_hr': [], 'mask': np.bool_([]), 'pct_valid': None}
+
+    seg_hr = orig_hr[orig_hr != 0]
+    max_seg = max_seg_min*60*4  # convert minutes to samples
+
+    if policy == 'late_valid':
+        result['seg_hr'] = seg_hr[-max_seg:]
+    else:
+        result['seg_hr'] = seg_hr[:max_seg]
+
+    # save_xlsx(result, 'final')
+
+    return result
