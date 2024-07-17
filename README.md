@@ -33,13 +33,16 @@ Key Jupyter Notebooks (_currently configured to run on Google Colab_):
      -   Uses transfer learning to train using ResNetX [18, 34, 50] model
  
 Other Notebooks:
-- [CTG_RP_Display_Denoised](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_RP_Display_Denoised.ipynb)
+- [CTG_Display_Denoised](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Display_Denoised.ipynb)
   - Displays sample denoised signals
   
-- [CTG_RP_Generate_Recurrence_Plots](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_RP_Generate_Recurrence_Plots.ipynb)
+- [CTG_Generate_Recurrence_Plots](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Generate_Recurrence_Plots.ipynb)
   - Creates individual RP Images.  _IMAGES_DIR/rp_images_index.json_ contains metadata associated with images for each recording
+ 
+- [CTG_Generate_Poincaré_Plots](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Generate_Poincar%C3%A9_Plots.ipynb)
+  - Creates individual PC Images.  _IMAGES_DIR/pc_images_index.json_ contains metadata associated with images for each recording
   
-- [CTG_RP_Explore_Datasets](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_RP_Explore_Datasets.ipynb)
+- [CTG_Explore_Datasets](https://github.com/andre-coimbra-ifg/CTG_RP_PC/blob/master/CTG_Explore_Datasets.ipynb)
   - Builds Databunch and displays contents
 
 
