@@ -8,7 +8,7 @@ import random
 import copy
 
 
-def split_recordings_by_outcome(data, thresh, key='pH'):
+def split_recordings_by_outcome(data, thresh=7.15, key='pH'):
     all_true = []
     all_false = []
 
@@ -26,6 +26,37 @@ def split_recordings_by_outcome(data, thresh, key='pH'):
     all_true = all_true[:n]
 
     return all_false, all_true
+
+
+def get_recordings_and_outcomes(data, thresh=7.15, key='pH', shuffle=True, balanced=True, verbose=False):
+    all_true = []
+    all_false = []
+
+    for k, v in data.items():
+        if v['outcome'][key] >= thresh:
+            all_true.append(k)
+        else:
+            all_false.append(k)
+
+    if shuffle:
+        random.shuffle(all_false)
+        random.shuffle(all_true)
+        if verbose:
+            print('  Shuffling data: {} false records and {} true.'.format(
+                len(all_false), len(all_true)))
+
+    if balanced:
+        n = min(len(all_false), len(all_true))
+        all_false = all_false[:n]
+        all_true = all_true[:n]
+        if verbose:
+            print('  Balancing data: choosing {} of each outcome.'.format(
+                len(all_false)))
+
+    recordings = all_false + all_true
+    outcomes = [0] * len(all_false) + [1] * len(all_true)
+
+    return recordings, outcomes
 
 
 def compute_splits(all_false, all_true, n_splits=5):
@@ -83,9 +114,9 @@ def annotate_train_valid_group(group, data, exclude=[], include=[]):
     return results
 
 
-def get_splits(image_dir='images', image_file='rp_images_index.json',
+def get_splits(image_dir='images', image_file='images_index.json',
                thresh=7.15, exclude=[], include=[], verbose=False, n_splits=2):
-    random.seed(1234)
+    # random.seed(1234)
     with open(os.path.join(image_dir, image_file), 'r') as infile:
         data = json.load(infile)
 
@@ -151,3 +182,45 @@ def generate_lists(group, image_dir='images', train_file='train.csv',
                 for fname in all_files:
                     line = '{}, {}'.format(fname, 1 if label else 0)
                     print(line, file=outfile)
+
+
+def save_label_file(data, image_dir='images',
+                    csv_file='labels.csv', header='fname, label'):
+
+    if csv_file is None:
+        results = []
+        for value in data.values():
+            for fname in value['names']:
+                results.append(
+                    (os.path.join(image_dir, fname), value['label']))
+        return results
+    else:
+        with open(os.path.join(image_dir, csv_file), 'wt') as outfile:
+            if header:
+                print(header, file=outfile)
+            for value in data.values():
+                for fname in value['names']:
+                    line = '{}, {}'.format(fname, value['label'])
+                    print(line, file=outfile)
+
+
+def annotate_recordings(recordings, outcomes, data):
+    results = {}
+    for index, recno in enumerate(recordings):
+        results[recno] = {'names': data[recno]
+                          ['names'], 'label': outcomes[index]}
+    return results
+
+
+def generate_list(image_dir='images', image_file='images_index.json',
+                  thresh=7.15, key='pH', verbose=False, shuffle=True, balanced=True):
+    # random.seed(1234)
+    with open(os.path.join(image_dir, image_file), 'r') as infile:
+        data = json.load(infile)
+
+    recordings, outcomes = get_recordings_and_outcomes(
+        data, thresh, key='pH', shuffle=shuffle, balanced=balanced, verbose=verbose)
+
+    results = annotate_recordings(recordings, outcomes, data)
+
+    return recordings, outcomes, results
