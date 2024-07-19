@@ -11,7 +11,7 @@ GITHUB_DEFAULT_SRC_FILES = [
     'generate_poincare_images.py',
     'libPC.py',
     'libRP.py',
-    'test.py',
+    'simple_test.py',
 ]
 
 RECORDINGS_DIR = '/content/ctu-uhb-ctgdb'
