@@ -275,6 +275,11 @@ def generate_rp_images_segment(recordings_dir, n_dec=4, clip_stage_II=False,
     with open(os.path.join(images_dir, images_index_file), 'w') as outfile:
         json.dump(results, outfile)
 
+    num_records = len(results)
+    num_images = num_records * len(rp_params)
+
+    return num_records, num_images
+
 
 def generate_rp_images_simple(recordings_dir, n_dec=4, clip_stage_II=False,
                               max_seg_min=10, policy='early_valid',
