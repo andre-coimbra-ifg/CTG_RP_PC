@@ -196,9 +196,8 @@ def generate_pc_images_segment(recordings_dir, n_dec=4, clip_stage_II=False,
 
         selected_hr = np.round(selected_hr).astype(int)
 
-        # TODO: mudar para único arquivo, alterar no arquivo compute_metadata -> annotate_train_valid_group
+        # Keep list to maintain structure used in other methods
         image_names = []
-
         fname = create_pc(selected_hr, base_name=recno, show_image=show_image,
                           images_dir=images_dir, cmap=cmap, use_clip=clip_stage_II)
         image_names.append(fname)
@@ -210,6 +209,8 @@ def generate_pc_images_segment(recordings_dir, n_dec=4, clip_stage_II=False,
 
     with open(os.path.join(images_dir, images_index_file), 'w') as outfile:
         json.dump(results, outfile)
+
+    return len(results)
 
 
 def generate_pc_images_simple(recordings_dir, n_dec=4, clip_stage_II=False,

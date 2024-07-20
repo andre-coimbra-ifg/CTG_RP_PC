@@ -17,6 +17,8 @@ def create_rp(segment,
               ):
     """Generate recurrence plot for specified signal segment and save to disk"""
 
+    if base_name is None:
+        base_name = 'sample'
     fname = '{}_d{}_t{}_p{}{}.{}'.format(base_name, dimension, time_delay, percentage,
                                          '_clipped' if use_clip else '', suffix)
 

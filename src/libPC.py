@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-
 import os
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
 from scipy.ndimage import gaussian_filter
+from PIL import Image
+import io
+
 
 TIFF_DEFLATE = 32946
 
@@ -74,7 +76,7 @@ def np_to_uint8(X):
     return X.astype(np.uint8)
 
 
-def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, save=False):
+def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1):
     # def msp_plots(X, scales=12, scstep=1, nrow=3, ncol=4, save=False):
     """
     MSP function creates an ensemble of Poincare Plots, one for each coarse grained time series
@@ -109,12 +111,12 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, save=False):
         raise ValueError(
             'Adjust the number of plots by number of rows and columns to be displayed')
 
-    Xmin = np.floor(np.min(X) * 10) / 10 - 0.05
-    Xmax = np.ceil(np.max(X) * 10) / 10 + 0.05
-    Xstep = round((Xmax - Xmin) / 5 * 10) / 10
-    ticks = np.arange(Xmin, Xmax + Xstep, Xstep)
+    # Xmin = np.floor(np.min(X) * 10) / 10 - 0.05
+    # Xmax = np.ceil(np.max(X) * 10) / 10 + 0.05
+    # Xstep = round((Xmax - Xmin) / 5 * 10) / 10
+    # ticks = np.arange(Xmin, Xmax + Xstep, Xstep)
 
-    fig, axes = plt.subplots(nrow, ncol, figsize=(7, 7))
+    fig, axes = plt.subplots(nrow, ncol, figsize=(7, 7), layout="constrained")
     if nrow * ncol == 1:
         axes = [axes]
     else:
@@ -127,7 +129,7 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, save=False):
 
         ax = axes[idx]
         # sc = ax.scatter(yp, ym, c='b', alpha=0.5, edgecolors='none')
-        sc = dscatter(yp, ym, smoothing=20, bins=[
+        dscatter(yp, ym, smoothing=20, bins=[
             700, 700], plottype='scatter', marker='s', msize=3, filled=True)
 
         # ax.set_xlim([Xmin, Xmax])
@@ -142,11 +144,13 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, save=False):
     for ax in axes[len(S0):]:
         fig.delaxes(ax)
 
-    if save:
-        plt.savefig('../content/images/Figure1.jpg', dpi=300,
-                    pad_inches=0, bbox_inches='tight')
+    plt.axis('off')
+    plt.margins(0, 0)
+    # plt.tight_layout()
 
-    fig = plt.gcf()
+    # plt.savefig('../content/images/Figure1.jpg', dpi=300,
+    #             pad_inches=0, bbox_inches='tight')
+
     fig.canvas.draw()
     array_data = np.array(fig.canvas.renderer.buffer_rgba())
     plt.close()
@@ -175,20 +179,6 @@ def coarse_grain(x, s):
         y_s[j] = np.mean(x[ind1:ind2])
 
     return y_s
-
-
-# Example usage:
-# X = np.random.randn(1000)
-# msp_plots(X)
-
-
-# df = pd.read_csv('../content/1005_60min.csv')
-
-# length = 10 * 4 * 60
-# # rr_intervals = df['hr'].tail(length).head(2400).values
-# rr_intervals = df['hr'].tail(length).values
-
-# msp_plots(rr_intervals, 1, 1, 1, 1)
 
 
 def dscatter(X, Y, **kwargs):
@@ -251,8 +241,6 @@ def dscatter(X, Y, **kwargs):
     if logy:
         ctrs2 = 10 ** ctrs2
 
-    plt.axis('off')
-
     if plottype == 'surf':
         Xgrid, Ygrid = np.meshgrid(ctrs1, ctrs2)
         fig = plt.figure()
@@ -279,6 +267,3 @@ def dscatter(X, Y, **kwargs):
 
     if logy:
         plt.yscale('log')
-
-    plt.tight_layout()
-    plt.margins(0, 0)
