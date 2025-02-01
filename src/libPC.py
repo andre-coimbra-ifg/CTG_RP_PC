@@ -54,7 +54,7 @@ def create_pc(segment,
 
     # segment = np.expand_dims(segment, 0)
     # pc = plot_poincare(segment)
-    pc = msp_plots(segment)
+    pc = msp_plots(segment, cmap=cmap)
 
     imageio.imwrite(os.path.join(images_dir, fname), pc,
                     format=suffix, **{"compression": compress})
@@ -76,7 +76,7 @@ def np_to_uint8(X):
     return X.astype(np.uint8)
 
 
-def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1):
+def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, cmap=None):
     # def msp_plots(X, scales=12, scstep=1, nrow=3, ncol=4, save=False):
     """
     MSP function creates an ensemble of Poincare Plots, one for each coarse grained time series
@@ -130,7 +130,7 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1):
         ax = axes[idx]
         # sc = ax.scatter(yp, ym, c='b', alpha=0.5, edgecolors='none')
         dscatter(yp, ym, smoothing=20, bins=[
-            700, 700], plottype='scatter', marker='s', msize=3, filled=True)
+            700, 700], plottype='scatter', marker='s', msize=3, filled=True, cmap=cmap)
 
         # ax.set_xlim([Xmin, Xmax])
         # ax.set_ylim([Xmin, Xmax])
@@ -181,7 +181,7 @@ def coarse_grain(x, s):
     return y_s
 
 
-def dscatter(X, Y, **kwargs):
+def dscatter(X, Y, cmap=None, **kwargs):
     # Default parameters
     lambda_val = 20
     nbins = None
@@ -262,7 +262,7 @@ def dscatter(X, Y, **kwargs):
         ind = bin2 * nbins[0] + bin1
         col = F[ind]
 
-        plt.scatter(X, Y, c=col, s=msize, marker=marker, cmap='jet',
+        plt.scatter(X, Y, c=col, s=msize, marker=marker, cmap=cmap,
                     edgecolor='none' if filled else 'k')
 
     if logy:
