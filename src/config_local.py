@@ -3,6 +3,7 @@
 #
 
 GITHUB_PREFIX = 'https://raw.githubusercontent.com/andre-coimbra-ifg/CTG_RP_PC/master/src/'
+
 GITHUB_DEFAULT_SRC_FILES = [
     'basic_denoise.py',
     'compute_metadata.py',
@@ -13,6 +14,25 @@ GITHUB_DEFAULT_SRC_FILES = [
     'libRP.py',
     'simple_test.py',
 ]
+
+GITHUB_RP_SRC_FILES = [
+    'basic_denoise.py',
+    'compute_metadata.py',
+    'ctg_utils.py',
+    'generate_recurrence_images.py',
+    'libRP.py',
+    'simple_test.py',
+]
+
+GITHUB_PC_SRC_FILES = [
+    'basic_denoise.py',
+    'compute_metadata.py',
+    'ctg_utils.py',
+    'generate_poincare_images.py',
+    'libPC.py',
+    'simple_test.py',
+]
+
 
 RECORDINGS_DIR = '/content/ctu-uhb-ctgdb'
 IMAGES_DIR = '/content/images'
@@ -55,3 +75,9 @@ def get_github_files(flist):
 
 def get_default_github_src_files():
     get_github_files(GITHUB_DEFAULT_SRC_FILES)
+
+def get_rp_github_src_files():
+    get_github_files(GITHUB_RP_SRC_FILES)
+
+def get_pc_github_src_files():
+    get_github_files(GITHUB_PC_SRC_FILES)
