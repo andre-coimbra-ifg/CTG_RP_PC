@@ -139,7 +139,7 @@ def get_splits(image_dir='images', image_file='images_index.json',
 
 
 def generate_label_file(group, image_dir='images',
-                        csv_file='labels.csv', header='fname, label'):
+                        csv_file='labels.csv', header='fname,label'):
     if csv_file is None:
         results = []
         for v in group.values():
@@ -160,7 +160,7 @@ def generate_label_file(group, image_dir='images',
 
 
 def OLDgenerate_lists(group, image_dir='images', train_file='train.csv',
-                      valid_file='valid.csv', header='fname, label'):
+                      valid_file='valid.csv', header='fname,label'):
     for k, csv_file in [['train', train_file], ['valid', valid_file]]:
         with open(csv_file, 'wt') as outfile:
             if header:
@@ -173,7 +173,7 @@ def OLDgenerate_lists(group, image_dir='images', train_file='train.csv',
 
 
 def generate_lists(group, image_dir='images', train_file='train.csv',
-                   valid_file='valid.csv', header='fname, label'):
+                   valid_file='valid.csv', header='fname,label'):
     for k, csv_file in [['train', train_file], ['valid', valid_file]]:
         with open(os.path.join(image_dir, csv_file), 'wt') as outfile:
             if header:
@@ -185,7 +185,7 @@ def generate_lists(group, image_dir='images', train_file='train.csv',
 
 
 def save_label_file(data, image_dir='images',
-                    csv_file='labels.csv', header='fname, label'):
+                    csv_file='labels.csv', header='fname,label'):
 
     if csv_file is None:
         results = []
