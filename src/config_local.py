@@ -51,6 +51,7 @@ GITHUB_MTF_SRC_FILES = [
 
 RECORDINGS_DIR = "/content/ctu-uhb-ctgdb"
 IMAGES_DIR = "/content/images"
+THRESHOLD_PH = 7.15
 
 
 def try_remove_python_file(fname):
