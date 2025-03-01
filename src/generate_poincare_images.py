@@ -237,7 +237,6 @@ def generate_pc_images_segment(
 
         selected_hr = np.round(selected_hr).astype(int)
 
-        # Keep list to maintain structure used in other methods
         image_names = []
         for lag in pc_lags:
             fname = create_pc(
@@ -259,7 +258,10 @@ def generate_pc_images_segment(
     with open(os.path.join(images_dir, images_index_file), "w") as outfile:
         json.dump(results, outfile)
 
-    return len(results)
+    num_records = len(results)
+    num_images = num_records * len(pc_lags)
+
+    return num_records, num_images
 
 
 def generate_pc_images_simple(

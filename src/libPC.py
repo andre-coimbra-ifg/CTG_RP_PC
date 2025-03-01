@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import imageio
 from scipy.ndimage import gaussian_filter
+from scipy.stats import gaussian_kde
 from PIL import Image
 import io
 
@@ -40,13 +41,14 @@ def plot_poincare(data):
     return array_data
 
 
-def plot_poincare_multiscale(data, lag=1):
+def plot_poincare_multiscale(data, lag=1, cmap=None):
     """
     Gera um gráfico de Poincaré Multiescala para diferentes lags.
 
     Parâmetros:
     - data: Série temporal da frequência cardíaca fetal.
     - lag: Definição do lag para análise (padrão = 1).
+    - cmap: Colormap para indicar densidade de pontos. Se None, apenas plota os pontos.
 
     Retorna:
     - array_data: Representação da imagem como um array numpy.
@@ -56,8 +58,16 @@ def plot_poincare_multiscale(data, lag=1):
     if len(rr) <= lag:
         raise ValueError("O lag é maior do que a quantidade de pontos na série RR.")
 
-    # Criar o scatter plot RR_n vs RR_n+lag
-    plt.scatter(rr[:-lag], rr[lag:], s=4, marker="o")
+    # Preparar os dados para KDE
+    x = rr[:-lag]
+    y = rr[lag:]
+
+    xy = np.vstack([x, y])  # Matriz para KDE
+    kde = gaussian_kde(xy)(xy)  # Calcula a densidade em cada ponto
+
+    # Criar scatter plot com coloração por densidade
+    plt.figure(figsize=(5, 5))
+    plt.scatter(x, y, c=kde if cmap else None, cmap=cmap, s=3)
 
     plt.axis("off")
     plt.axis("tight")  # Remove bordas extras
@@ -97,8 +107,8 @@ def create_pc(
 
     # segment = np.expand_dims(segment, 0)
     # pc = plot_poincare(segment)
-    pc = plot_poincare_multiscale(segment, lag)
     # pc = msp_plots(segment, cmap=cmap)
+    pc = plot_poincare_multiscale(segment, lag, cmap=cmap)
 
     imageio.imwrite(
         os.path.join(images_dir, fname), pc, format=suffix, **{"compression": compress}
