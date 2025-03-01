@@ -15,7 +15,7 @@ TIFF_DEFLATE = 32946
 
 def calculate_rr(frh):
 
-    rr = 60*1000 / frh
+    rr = 60 * 1000 / frh
 
     return rr
 
@@ -24,47 +24,92 @@ def plot_poincare(data):
 
     rr = calculate_rr(data)
 
-    plt.scatter(rr[:-1], rr[1:], s=4, marker='s')
+    plt.scatter(rr[:-1], rr[1:], s=4, marker="o")
 
-    plt.axis('off')
-    plt.axis('tight')  # gets rid of white border
-    plt.axis('image')
+    plt.axis("off")
+    plt.axis("tight")  # gets rid of white border
+    plt.axis("image")
+    # plt.tight_layout()
 
     fig = plt.gcf()
     fig.canvas.draw()
+
     array_data = np.array(fig.canvas.renderer.buffer_rgba())
     plt.close()
 
     return array_data
 
 
-def create_pc(segment,
-              use_clip=False, knn=None, imsize=None,
-              images_dir='', base_name='Sample',
-              suffix='tif',  # suffix='jpg', # suffix='png'
-              compress=TIFF_DEFLATE,
-              show_image=False, cmap=None,  # cmap='gray', cmap='binary'
-              ):
+def plot_poincare_multiscale(data, lag=1):
+    """
+    Gera um gráfico de Poincaré Multiescala para diferentes lags.
+
+    Parâmetros:
+    - data: Série temporal da frequência cardíaca fetal.
+    - lag: Definição do lag para análise (padrão = 1).
+
+    Retorna:
+    - array_data: Representação da imagem como um array numpy.
+    """
+    rr = calculate_rr(data)  # Função para calcular os intervalos RR
+
+    if len(rr) <= lag:
+        raise ValueError("O lag é maior do que a quantidade de pontos na série RR.")
+
+    # Criar o scatter plot RR_n vs RR_n+lag
+    plt.scatter(rr[:-lag], rr[lag:], s=4, marker="o")
+
+    plt.axis("off")
+    plt.axis("tight")  # Remove bordas extras
+    plt.axis("image")
+    plt.tight_layout()
+
+    fig = plt.gcf()
+    fig.canvas.draw()
+
+    # Converter para array numpy
+    array_data = np.array(fig.canvas.renderer.buffer_rgba())
+    plt.close()
+
+    return array_data
+
+
+def create_pc(
+    segment,
+    use_clip=False,
+    knn=None,
+    imsize=None,
+    lag=1,
+    images_dir="",
+    base_name="Sample",
+    suffix="tif",  # suffix='jpg', # suffix='png'
+    compress=TIFF_DEFLATE,
+    show_image=False,
+    cmap=None,  # cmap='gray', cmap='binary'
+):
     """Generate poincaré plot for specified signal segment and save to disk"""
 
     if base_name is None:
-        base_name = 'sample'
-    fname = '{}_pc{}.{}'.format(
-        base_name, '_clipped' if use_clip else '', suffix)
+        base_name = "sample"
+    fname = "{}_pc_lag{}{}.{}".format(
+        base_name, lag, "_clipped" if use_clip else "", suffix
+    )
 
     # segment = np.expand_dims(segment, 0)
     # pc = plot_poincare(segment)
-    pc = msp_plots(segment, cmap=cmap)
+    pc = plot_poincare_multiscale(segment, lag)
+    # pc = msp_plots(segment, cmap=cmap)
 
-    imageio.imwrite(os.path.join(images_dir, fname), pc,
-                    format=suffix, **{"compression": compress})
+    imageio.imwrite(
+        os.path.join(images_dir, fname), pc, format=suffix, **{"compression": compress}
+    )
 
     if show_image:
         plt.figure(figsize=(5, 5))
-        plt.imshow(pc, cmap=cmap, origin='lower')
-        plt.title('Poincaré Plot for {}'.format(fname), fontsize=14)
-        plt.xlabel('RR$_n$ (ms)')
-        plt.ylabel('RR$_{n+1}$ (ms)')
+        plt.imshow(pc, cmap=cmap, origin="lower")
+        plt.title("Poincaré Plot for {}".format(fname), fontsize=14)
+        plt.xlabel("RR$_n$ (ms)")
+        plt.ylabel("RR$_{n+1}$ (ms)")
         plt.show()
 
     return fname
@@ -72,7 +117,7 @@ def create_pc(segment,
 
 def np_to_uint8(X):
     X -= X.min()
-    X = (255/X.max())*X
+    X = (255 / X.max()) * X
     return X.astype(np.uint8)
 
 
@@ -91,25 +136,26 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, cmap=None):
     """
 
     if not isinstance(X, np.ndarray) or X.ndim != 1:
-        raise ValueError('X must be a numeric vector')
+        raise ValueError("X must be a numeric vector")
 
     if not isinstance(scales, int) or scales <= 0:
-        raise ValueError('scales must be a positive integer')
+        raise ValueError("scales must be a positive integer")
 
     if not isinstance(scstep, int) or scstep <= 0:
-        raise ValueError('scstep must be a positive integer')
+        raise ValueError("scstep must be a positive integer")
 
     if not isinstance(nrow, int) or nrow <= 0:
-        raise ValueError('nrow must be a positive integer')
+        raise ValueError("nrow must be a positive integer")
 
     if not isinstance(ncol, int) or ncol <= 0:
-        raise ValueError('ncol must be a positive integer')
+        raise ValueError("ncol must be a positive integer")
 
     S0 = range(1, scales + 1, scstep)
 
     if len(S0) > nrow * ncol:
         raise ValueError(
-            'Adjust the number of plots by number of rows and columns to be displayed')
+            "Adjust the number of plots by number of rows and columns to be displayed"
+        )
 
     # Xmin = np.floor(np.min(X) * 10) / 10 - 0.05
     # Xmax = np.ceil(np.max(X) * 10) / 10 + 0.05
@@ -129,8 +175,17 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, cmap=None):
 
         ax = axes[idx]
         # sc = ax.scatter(yp, ym, c='b', alpha=0.5, edgecolors='none')
-        dscatter(yp, ym, smoothing=20, bins=[
-            700, 700], plottype='scatter', marker='s', msize=3, filled=True, cmap=cmap)
+        dscatter(
+            yp,
+            ym,
+            smoothing=20,
+            bins=[700, 700],
+            plottype="scatter",
+            marker="s",
+            msize=3,
+            filled=True,
+            cmap=cmap,
+        )
 
         # ax.set_xlim([Xmin, Xmax])
         # ax.set_ylim([Xmin, Xmax])
@@ -141,10 +196,10 @@ def msp_plots(X, scales=1, scstep=1, nrow=1, ncol=1, cmap=None):
         # ax.set_xlabel(f'z_{s}(i)')
         # ax.set_ylabel(f'z_{s}(i+1)')
 
-    for ax in axes[len(S0):]:
+    for ax in axes[len(S0) :]:
         fig.delaxes(ax)
 
-    plt.axis('off')
+    plt.axis("off")
     plt.margins(0, 0)
     # plt.tight_layout()
 
@@ -185,30 +240,29 @@ def dscatter(X, Y, cmap=None, **kwargs):
     # Default parameters
     lambda_val = 20
     nbins = None
-    plottype = 'scatter'
+    plottype = "scatter"
     logy = False
     msize = 10
-    marker = 's'
+    marker = "s"
     filled = True
 
     # Handle additional arguments
     for key, value in kwargs.items():
-        if key == 'smoothing':
+        if key == "smoothing":
             lambda_val = value
-        elif key == 'bins':
-            nbins = value if isinstance(value, (list, tuple)) else [
-                value, value]
-        elif key == 'plottype':
+        elif key == "bins":
+            nbins = value if isinstance(value, (list, tuple)) else [value, value]
+        elif key == "plottype":
             plottype = value
-        elif key == 'logy':
+        elif key == "logy":
             logy = value
             if logy:
                 Y = np.log10(Y)
-        elif key == 'marker':
+        elif key == "marker":
             marker = value
-        elif key == 'msize':
+        elif key == "msize":
             msize = value
-        elif key == 'filled':
+        elif key == "filled":
             filled = value
         else:
             raise ValueError(f"Unknown parameter: {key}")
@@ -239,31 +293,37 @@ def dscatter(X, Y, cmap=None, **kwargs):
     H = gaussian_filter(H, sigma=lambda_val)
 
     if logy:
-        ctrs2 = 10 ** ctrs2
+        ctrs2 = 10**ctrs2
 
-    if plottype == 'surf':
+    if plottype == "surf":
         Xgrid, Ygrid = np.meshgrid(ctrs1, ctrs2)
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot_surface(Xgrid, Ygrid, H, edgecolor='none')
-    elif plottype == 'mesh':
+        ax = fig.add_subplot(111, projection="3d")
+        ax.plot_surface(Xgrid, Ygrid, H, edgecolor="none")
+    elif plottype == "mesh":
         Xgrid, Ygrid = np.meshgrid(ctrs1, ctrs2)
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        ax = fig.add_subplot(111, projection="3d")
         ax.plot_wireframe(Xgrid, Ygrid, H)
-    elif plottype == 'contour':
+    elif plottype == "contour":
         plt.contour(ctrs1, ctrs2, H)
-    elif plottype == 'image':
-        plt.imshow(H, extent=[minx, maxx, miny, maxy],
-                   origin='lower', aspect='auto')
+    elif plottype == "image":
+        plt.imshow(H, extent=[minx, maxx, miny, maxy], origin="lower", aspect="auto")
         plt.colorbar()
-    elif plottype == 'scatter':
+    elif plottype == "scatter":
         F = H.flatten()
         ind = bin2 * nbins[0] + bin1
         col = F[ind]
 
-        plt.scatter(X, Y, c=col, s=msize, marker=marker, cmap=cmap,
-                    edgecolor='none' if filled else 'k')
+        plt.scatter(
+            X,
+            Y,
+            c=col,
+            s=msize,
+            marker=marker,
+            cmap=cmap,
+            edgecolor="none" if filled else "k",
+        )
 
     if logy:
-        plt.yscale('log')
+        plt.yscale("log")
