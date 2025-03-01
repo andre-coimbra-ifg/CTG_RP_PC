@@ -240,7 +240,6 @@ def generate_pc_images_segment(
         # Keep list to maintain structure used in other methods
         image_names = []
         for lag in pc_lags:
-            print(lag)
             fname = create_pc(
                 selected_hr,
                 base_name=recno,
