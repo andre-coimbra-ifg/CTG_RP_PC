@@ -11,7 +11,7 @@ from PIL import Image
 import io
 
 
-TIFF_DEFLATE = 32946
+TIFF_DEFLATE = 32946  # Código para compressão DEFLATE no formato TIFF
 
 
 def calculate_rr(frh):
@@ -59,8 +59,7 @@ def plot_poincare_multiscale(data, lag=1, cmap=None):
         raise ValueError("O lag é maior do que a quantidade de pontos na série RR.")
 
     # Preparar os dados para KDE
-    x = rr[:-lag]
-    y = rr[lag:]
+    x, y = rr[:-lag], rr[lag:]
 
     xy = np.vstack([x, y])  # Matriz para KDE
     kde = gaussian_kde(xy)(xy)  # Calcula a densidade em cada ponto
@@ -79,9 +78,34 @@ def plot_poincare_multiscale(data, lag=1, cmap=None):
 
     # Converter para array numpy
     array_data = np.array(fig.canvas.renderer.buffer_rgba())
+    plt.close(fig)
     plt.close()
 
     return array_data
+
+
+def plot_poincare_multiscale2(data, lag=1, cmap=None):
+    rr = calculate_rr(data)
+    if len(rr) <= lag:
+        raise ValueError("O lag é maior do que a quantidade de pontos na série RR.")
+
+    x, y = rr[:-lag], rr[lag:]
+    kde = gaussian_kde(np.vstack([x, y]))(np.vstack([x, y]))
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    plt.scatter(x, y, c=kde if cmap else None, cmap=cmap, s=1, marker=",")
+    ax.axis("off")
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="tiff", dpi=100, bbox_inches="tight", pad_inches=0)
+    buf.seek(0)
+
+    img = Image.open(buf)  # Lê a imagem diretamente do buffer
+    img = img.convert("RGB")  # TIFF pode ter transparência, converter evita problemas
+    buf.close()
+    plt.close(fig)  # Libera memória da figura
+
+    return img
 
 
 def create_pc(
@@ -108,7 +132,7 @@ def create_pc(
     # segment = np.expand_dims(segment, 0)
     # pc = plot_poincare(segment)
     # pc = msp_plots(segment, cmap=cmap)
-    pc = plot_poincare_multiscale(segment, lag, cmap=cmap)
+    pc = plot_poincare_multiscale2(segment, lag, cmap=cmap)
 
     imageio.imwrite(
         os.path.join(images_dir, fname), pc, format=suffix, **{"compression": compress}
