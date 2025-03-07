@@ -143,7 +143,7 @@ def create_pc(
         plt.imshow(pc, cmap=cmap, origin="lower")
         plt.title("Poincaré Plot for {}".format(fname), fontsize=14)
         plt.xlabel("RR$_n$ (ms)")
-        plt.ylabel("RR$_{n+1}$ (ms)")
+        plt.ylabel("RR$_{{n+{}}}$ (ms)".format(lag))
         plt.show()
 
     return fname
